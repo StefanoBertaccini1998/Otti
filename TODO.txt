@@ -1,0 +1,17 @@
+1) CroudSystem Contract
+    A) Controllare il contratto di Ballot e di voting se ci sono delle librerie utili
+    B) Capire come controllare la transazione e di conseguenza accettare il voto passato
+    C) Capire come avviare la seconda funding
+    D) Valutare i primi tempi di setting per la proposta Amount/Time
+    E.3) Capire se collegare il Vault per tenere il valore raccolto dal funding
+
+2) NFT Product
+    A) Dare una forma all'NFT e ai dati che bisogna caricare, soprattutto se poi finiscono su openSea 
+    B.4) Capire se deve essere passato qua l'hash del pdf per poter poi caricarlo sul contratto notarize
+    C) Sarebbe interessante poter caricare delle versioni successive sul prodotto già analizzato
+
+3) Vault
+    A) Integrare il vault tale per cui possegga tutte le donazioni e non possa trasferirli se non dall'owner
+
+4) Notarize 
+    A) Integrare la notarizzazione del pdf per riflettere a delle possibili manomissioni e check esterni
