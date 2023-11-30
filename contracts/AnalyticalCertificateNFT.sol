@@ -8,30 +8,31 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
     using Counters for Counters.Counter;
 
-    // Contatore degli ID dei token
+    //Counter
     Counters.Counter private tokenIdCounter;
 
-    // Ruolo per i laboratori autorizzati
+    //Role for authorized labs
     bytes32 public constant AUTHORIZED_LAB_ROLE =
         keccak256("AUTHORIZED_LAB_ROLE");
 
-    // Evento emesso quando viene aggiunto un certificato di analisi
+    //Event that is emitted when an analisys is deployed for a new product
     event CertificateAdded(uint256 indexed tokenId, string productHash);
 
-    // Evento emesso quando viene aggiunta un'analisi a un certificato esistente
+    //Event that is emitted when an analisys is added
     event AnalysisAdded(uint256 indexed tokenId);
 
-    // Costruttore del contratto
+    //Constructor
     constructor() ERC1155("uri") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(AUTHORIZED_LAB_ROLE, msg.sender);
     }
 
-    // Funzione per aggiungere un certificato di analisi
+    //Function that add new certificate for a new product
     function addCertificate(
         string memory _productHash
     ) external onlyRole(AUTHORIZED_LAB_ROLE) {
         tokenIdCounter.increment();
+
         uint256 newTokenId = tokenIdCounter.current();
 
         _mint(address(this), newTokenId, 1, "");
@@ -39,7 +40,7 @@ contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
         emit CertificateAdded(newTokenId, _productHash);
     }
 
-    // Funzione per aggiungere un'analisi a un certificato esistente
+    //Function that add analisys to existing product id
     function addAnalysis(
         uint256 _tokenId
     ) external onlyRole(AUTHORIZED_LAB_ROLE) {
@@ -48,13 +49,14 @@ contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
         emit AnalysisAdded(_tokenId);
     }
 
-    // Funzione per ottenere la lista di laboratori autorizzati per un certificato
+    //Funzione that obtain a list of authorized labs
     function addAuthorizedLab(
         address _authorizedLab
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(AUTHORIZED_LAB_ROLE, _authorizedLab);
     }
 
+    //Function needed for coflict interfaces
     function supportsInterface(
         bytes4 interfaceId
     )
