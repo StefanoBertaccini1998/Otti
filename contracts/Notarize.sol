@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
 
-contract Notarize is Ownable, AccessControlEnumerable {
+error docAlreadyRegistered();
+error indexNotFound();
+
+//Basic contract of notarization
+contract Notarize is AccessControlEnumerable {
 
     //Se volessimo introdurre anche la notarizzazione sugli NFT per garantirne l'hash e le versioni
     using Counters for Counters.Counter;
@@ -31,19 +34,24 @@ contract Notarize is Ownable, AccessControlEnumerable {
 
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-    }
+   }
 
     function setHashWriterRole(
         address _hashWriter
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(HASH_WRITER, _hashWriter);
     }
+    function removeHashWriterRole(address _hashWriter) external onlyRole (DEFAULT_ADMIN_ROLE) {
+        revokeRole(HASH_WRITER,_hashWriter);
+    }
 
     function addNewDocument(
         string memory _url,
         bytes32 _hash
     ) external onlyRole(HASH_WRITER) {
-        require(!_regHashes[_hash], "Hash already notarized");
+        if(_regHashes[_hash]){
+            revert docAlreadyRegistered();
+        }
         uint256 counter = _docCounter.current();
         _documents[counter] = Doc({docUrl: _url, docHash: _hash});
         _regHashes[_hash] = true;
@@ -54,7 +62,9 @@ contract Notarize is Ownable, AccessControlEnumerable {
     function getDocInfo(
         uint256 _num
     ) external view returns (string memory, bytes32) {
-        require(_num < _docCounter.current(), "Number does not exist");
+        if(_num > _docCounter.current()){
+            revert indexNotFound();
+        }
         return (_documents[_num].docUrl, _documents[_num].docHash);
     }
 

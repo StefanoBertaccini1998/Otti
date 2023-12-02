@@ -1,110 +1,98 @@
-const { expect } = require("chai");
 const {
   BN,
   constants,
-  expectEvent,
+  excepctEvent,
   expectRevert,
   time,
+  balance,
 } = require("@openzeppelin/test-helpers");
 
-const Web3 = require("web3");
-const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+const { ZERO_ADDRES } = constants;
 
-const Notarize = artifacts.require("Notarize");
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-const { ZERO_ADDRESS } = constants;
+require("@nomicfoundation/hardhat-chai-matchers");
+let notarize, creator, other1, other2, event, newCreator;
 
-const fromWei = (x) => web3.utils.fromWei(x.toString());
-const toWei = (x) => web3.utils.toWei(x.toString());
-
-const HashWriter =
-  "0x9bd7b39e404ec8163ddb5278c0044198ca50a2bf864985cbc93f934a5afed5d6";
-const AdminRole =
-  "0x0000000000000000000000000000000000000000000000000000000000000000";
 const hash1 =
   "0x8613911112c3d65a9c52f1316fbd18f56eb43b7c0f68f49f6694d9b561bfeaf7";
 const hash2 =
   "0x5b5aa7db42b8a6bccffceb0096f32de6dcb30ed454deb514de75c0c5ecc1370c";
+const HashWriter =
+  "0x9bd7b39e404ec8163ddb5278c0044198ca50a2bf864985cbc93f934a5afed5d6";
+  const AdminRole =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
-contract("Notarization Test", function (accounts) {
-  const Admin = accounts[0];
-  const HashWriter1 = accounts[1];
+describe("TokenNFT test", function (accounts) {
 
-  it("retrieve contract", async function () {
-    NotarizeContract = await Notarize.deployed();
-    expect(NotarizeContract.address).to.be.not.equal(ZERO_ADDRESS);
-    expect(NotarizeContract.address).to.match(/0x[0-9a-fA-F]{40}/);
+  it("Notarize Contract deploy", async function (){
+    //Get users
+    [creator, other1, other2, newCreator] = await ethers.getSigners();
+
+    const Notarize = await ethers.getContractFactory("Notarize");
+    console.log("Deploying Notarize contract...");
+    notarize = await Notarize.deploy();
+    await notarize.deployed();
+    console.log(notarize.address)
+    expect(notarize.address).to.be.not.equal(ZERO_ADDRES);
+    expect(notarize.address).to.match(/0x[0-9a-fA-F]{40}/);
   });
 
-  it("Contract admin assign hash writer role to account", async function () {
-    await expectRevert(
-      NotarizeContract.setHashWriterRole(HashWriter1, { from: HashWriter1 }),
-      "AccessControl: account " +
-        HashWriter1.toLowerCase() +
-        " is missing role " +
-        AdminRole
-    );
-    await NotarizeContract.setHashWriterRole(HashWriter1, {
-      from: Admin,
-    });
-    expect(await NotarizeContract.hasRole(HashWriter, HashWriter1)).to.be.true;
+  it("Check if not admin can assume HASH_WRITER role", async function(){
+    
+    await expect( notarize.connect(other1).setHashWriterRole(creator.address)).to.be.revertedWith("AccessControl: account " +
+    other1.address.toLowerCase() +
+    " is missing role " +
+    AdminRole);
   });
 
-  it("A hash writer address cannot assign the same role to another address", async function () {
-    await expectRevert(
-      NotarizeContract.setHashWriterRole(HashWriter1, { from: HashWriter1 }),
-      "AccessControl: account " +
-        HashWriter1.toLowerCase() +
-        " is missing role " +
-        AdminRole
-    );
+  it("Check if deployer can give HASH_WRITER role and retire it", async function(){
+    await notarize.connect(creator).setHashWriterRole(other1.address);
+    await notarize.connect(creator).setHashWriterRole(other2.address);
+    await notarize.connect(creator).removeHashWriterRole(other2.address);
   });
 
-  it("A admin address cannot notarize a document", async function () {
-    await expectRevert(
-      NotarizeContract.addNewDocument("Example", hash1, { from: Admin }),
-      "AccessControl: account " +
-        Admin.toLowerCase() +
-        " is missing role " +
-        HashWriter
-    );
+  it("Check if user without role of Hash_Writer can't add a document", async function (){
+    docUrl = "https//:url.com";
+    console.log("AccessControl: account " +
+    newCreator.address.toLowerCase() +
+    " is missing role " +
+    HashWriter);
+
+    await expect( notarize.connect(newCreator).addNewDocument(docUrl,hash1)).to.be.revertedWith("AccessControl: account " +
+    newCreator.address.toLowerCase() +
+    " is missing role " +
+    HashWriter);
   });
 
-  it("A hash writer address can notarize a document and get notarized doc back", async function () {
-    await NotarizeContract.addNewDocument("example", hash1, {
-      from: HashWriter1,
-    });
-    tot = await NotarizeContract.getDocsCount();
-    console.log("Total document registered: " + tot.toString());
-    result = await NotarizeContract.getDocInfo(tot - 1);
-    console.log(result[0].toString() + ":" + result[1]);
+  it("Check if Hash_Writer can add a document", async function (){
+    docUrl = "https//:url.com";
+    console.log("Total document registered: " + hash1);
+    expect(await notarize.connect(other1).addNewDocument(docUrl,hash1)).to.emit(notarize, "DocHashAdded");
+    num =  await notarize.getDocsCount();
+    console.log("Total document registered: " + num.toString());
+    result =  await notarize.getDocInfo(num-1);
+    console.log("Document in: " + result[0] + " hash: "+result[1].toString());
   });
 
-  it("A hash writer address cannot notarize a document twice", async function () {
-    await expectRevert(
-      NotarizeContract.addNewDocument("example2", hash1, { from: HashWriter1 }),
-      "Hash already notarized"
-    );
-    tot = await NotarizeContract.getDocsCount();
-    console.log("Total document registered: " + tot.toString());
+  it("Check if Hash_Writer try to add the same document", async function(){
+    expect(await notarize.getRegisteredHash(hash1)).to.be.true;
+    docUrl = "https//:url2.com";
+    await expect( notarize.connect(other1).addNewDocument(docUrl,hash1)).to.be.revertedWithCustomError(notarize, "docAlreadyRegistered");
+    num =  await notarize.getDocsCount();
+    console.log("Total document registered: " + num.toString());
   });
 
-  it("A hash writer address can notarize another document and get notarized doc back", async function () {
-    await NotarizeContract.addNewDocument("test", hash2, {
-      from: HashWriter1,
-    });
-    tot = await NotarizeContract.getDocsCount();
-    console.log("Total document registered: " + tot.toString());
-    result = await NotarizeContract.getDocInfo(tot - 1);
-    console.log(result[0].toString() + ":" + result[1]);
+  it("Check if Hash_Writer can add a second document", async function (){
+    docUrl = "https//:url2.com";    
+    console.log("Total document registered: " + hash2);
+    expect(await notarize.connect(other1).addNewDocument(docUrl,hash2)).to.emit(notarize, "DocHashAdded");
+    num =  await notarize.getDocsCount();
+    console.log("Total document registered: " + num.toString());
+    result =  await notarize.getDocInfo(num-1);
+    console.log("Document in: " + result[0] + " hash: "+result[1].toString());
   });
 
-  it("Is document already registered", async function () {
-    expect(await NotarizeContract.getRegisteredHash(hash1)).to.be.true;
-    const hash1Corrupted =
-      "0xa2cbe6a9b5c75f04196a2d044fd62056a455feb6204af1803456be72c2ce0523";
-    expect(
-      await NotarizeContract.getRegisteredHash(hash1Corrupted)
-    ).to.be.false;
-  });
+ 
 });

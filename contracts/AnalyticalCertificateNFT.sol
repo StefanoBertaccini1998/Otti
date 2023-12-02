@@ -22,6 +22,7 @@ contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
     event AnalysisAdded(uint256 indexed tokenId);
 
     //Constructor
+    //TODO add uri
     constructor() ERC1155("uri") {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(AUTHORIZED_LAB_ROLE, msg.sender);
