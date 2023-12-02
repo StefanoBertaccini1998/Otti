@@ -2,12 +2,14 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./DonationVault.sol";
+import "./utils/DonationVault.sol";
+//import "./utils/PriceConsumer.sol";
 
 //Errors
 error timeElapsed();
 error timeNotElapsed();
 error votingClosed();
+error voted();
 error votingNotClosed();
 error amountZero();
 error proposalNotValid();
@@ -18,6 +20,7 @@ error ethNotSent();
 contract VotingContract is Ownable {
     uint256 public votingEndTime;
     uint256 public donationGoal;
+    uint256 public donationAmount;
     bool public isVotingClosed;
     uint256 public winningProposalId;
     uint256 public winningProposalVotes;
@@ -25,11 +28,18 @@ contract VotingContract is Ownable {
     address payable vaultAddress;
 
     struct Proposal {
-        string name;
-        uint256 votes;
+        bytes32 name;
+        uint256 weidhtedVotes;
+    }
+
+    struct Voter {
+        uint vote;
+        uint256 weightVote;
+        bool voted;
     }
 
     mapping(uint256 => Proposal) public proposals;
+    mapping(address => Voter) public voters;
 
     //Modifier that check if Voting period is not lapsed
     modifier onlyDuringVotingPeriod() {
@@ -39,10 +49,10 @@ contract VotingContract is Ownable {
         _;
     }
 
-    //Modifier that check if Voting is open
-    modifier onlyIfVotingOpen() {
-        if (isVotingClosed) {
-            revert votingClosed();
+    //Modifier that check if Voting period is not lapsed
+    modifier onlyNewVoter() {
+        if (voters[msg.sender].voted) {
+            revert voted();
         }
         _;
     }
@@ -61,17 +71,22 @@ contract VotingContract is Ownable {
     constructor(
         address payable _vaultAddress,
         uint256 _votingEndTime,
-        uint256 _donationGoal
+        uint256 _donationGoal,
+        bytes32[] memory proposalNames
     ) {
         vaultAddress = _vaultAddress;
-        votingEndTime = _votingEndTime;
+        votingEndTime = _votingEndTime + block.timestamp;
         donationGoal = _donationGoal;
         isVotingClosed = false;
         proposalsCount = 0;
+        for (uint i = 1; i < proposalNames.length; i++) {
+            proposalsCount++;
+            proposals[proposalsCount] = Proposal(proposalNames[i], 0);
+        }
     }
 
     //Function to add proposal to exsiting
-    function addProposal(string memory name) external onlyOwner onlyIfVotingOpen {
+    function addProposal(bytes32 name) external onlyOwner {
         proposalsCount++;
         proposals[proposalsCount] = Proposal(name, 0);
     }
@@ -83,14 +98,29 @@ contract VotingContract is Ownable {
         external
         payable
         onlyDuringVotingPeriod
-        onlyIfVotingOpen
         donationRequired
+        onlyNewVoter
     {
+        //Check
         if (proposalId == 0) {
             revert proposalNotValid();
         }
-        proposals[proposalId].votes += 1;
-        moveFound(msg.value);
+
+        //Donation part
+        uint _amount = msg.value;
+        donationAmount += _amount;
+        moveFound(_amount);
+
+        //Voter assestment
+        Voter storage voter = voters[msg.sender];
+        voter.vote = proposalId;
+        voter.weightVote = _amount;
+        voter.voted = true;
+
+        //Weithed vote is recorded as the amount of donation
+        proposals[proposalId].weidhtedVotes += _amount;
+
+        //Event
         emit Vote(proposalId, msg.sender);
     }
 
@@ -108,8 +138,8 @@ contract VotingContract is Ownable {
     function findWinningProposal() internal {
         uint256 maxVotes = 0;
         for (uint256 i = 1; i <= proposalsCount; i++) {
-            if (proposals[i].votes > maxVotes) {
-                maxVotes = proposals[i].votes;
+            if (proposals[i].weidhtedVotes > maxVotes) {
+                maxVotes = proposals[i].weidhtedVotes;
                 winningProposalId = i;
                 winningProposalVotes = maxVotes;
             }
@@ -120,7 +150,7 @@ contract VotingContract is Ownable {
     function withdrawDonations(
         address payable to,
         uint256 amount
-    ) external onlyOwner{
+    ) external onlyOwner {
         if (!isVotingClosed) {
             revert votingNotClosed();
         }

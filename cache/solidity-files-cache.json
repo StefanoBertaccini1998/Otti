@@ -665,8 +665,8 @@
       ]
     },
     "C:\\Users\\elber\\Desktop\\StefanoBertaccini\\MasterZDev\\Otti\\contracts\\Notarize.sol": {
-      "lastModificationDate": 1701527442675,
-      "contentHash": "5e258560b09e7283619679423823a0fe",
+      "lastModificationDate": 1701528108012,
+      "contentHash": "6e58c30462f362eeecae2d35f5ded507",
       "sourceName": "contracts/Notarize.sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -740,8 +740,8 @@
       ]
     },
     "C:\\Users\\elber\\Desktop\\StefanoBertaccini\\MasterZDev\\Otti\\contracts\\VotingContract .sol": {
-      "lastModificationDate": 1701357525875,
-      "contentHash": "ca909325288e9340acc1aa1f152a7472",
+      "lastModificationDate": 1701543790974,
+      "contentHash": "f1bdc6dce0e630f9336cc02b6aa048c0",
       "sourceName": "contracts/VotingContract .sol",
       "solcConfig": {
         "version": "0.8.19",
@@ -768,7 +768,7 @@
       },
       "imports": [
         "@openzeppelin/contracts/access/Ownable.sol",
-        "./DonationVault.sol"
+        "./utils/DonationVault.sol"
       ],
       "versionPragmas": [
         "^0.8.9"
@@ -777,10 +777,10 @@
         "VotingContract"
       ]
     },
-    "C:\\Users\\elber\\Desktop\\StefanoBertaccini\\MasterZDev\\Otti\\contracts\\DonationVault.sol": {
-      "lastModificationDate": 1701357672229,
-      "contentHash": "592213542c79657fba7dee52f4c59981",
-      "sourceName": "contracts/DonationVault.sol",
+    "C:\\Users\\elber\\Desktop\\StefanoBertaccini\\MasterZDev\\Otti\\contracts\\utils\\DonationVault.sol": {
+      "lastModificationDate": 1701544400740,
+      "contentHash": "f21acb04ce7bfeaa153b88c5afa8cd8a",
+      "sourceName": "contracts/utils/DonationVault.sol",
       "solcConfig": {
         "version": "0.8.19",
         "settings": {
@@ -813,6 +813,37 @@
       "artifacts": [
         "DonationVault"
       ]
+    },
+    "C:\\Users\\elber\\Desktop\\StefanoBertaccini\\MasterZDev\\Otti\\contracts\\utils\\PriceConsumer.sol": {
+      "lastModificationDate": 1701534663849,
+      "contentHash": "db42482179045f663a2cd77f318dcc8a",
+      "sourceName": "contracts/utils/PriceConsumer.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [],
+      "artifacts": []
     }
   }
 }
