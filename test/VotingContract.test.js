@@ -18,10 +18,6 @@ describe("Voting contract", function (accounts) {
     [testOwner, voter1, voter2, voter3, voter4, voter5] =
       await ethers.getSigners();
 
-    proposal1 = ethers.utils.formatBytes32String("Mela Melinda");
-    proposal2 = ethers.utils.formatBytes32String("Albiccocca Albisole");
-    proposal3 = ethers.utils.formatBytes32String("Pera sudtirol");
-
     const Vault = await ethers.getContractFactory("DonationVault");
     vault = await Vault.deploy();
 
@@ -29,12 +25,7 @@ describe("Voting contract", function (accounts) {
 
     const VotingContract = await ethers.getContractFactory("VotingContract");
 
-    voting = await VotingContract.deploy(
-      vault.address,
-      minuteEnding,
-      eurValue,
-      [proposal1, proposal2, proposal3]
-    );
+    voting = await VotingContract.deploy(vault.address);
 
     await voting.deployed();
 
@@ -43,27 +34,52 @@ describe("Voting contract", function (accounts) {
     console.log("Ballot contract deployed @:" + votingAddress);
     expect(votingAddress).to.be.not.equal(ethers.ZeroAddress);
     expect(votingAddress).to.match(/0x[0-9a-fA-F]{40}/);
+  });
+
+  it("Owner init voting", async function () {
+    proposal1 = ethers.utils.formatBytes32String("Mela Melinda");
+    proposal2 = ethers.utils.formatBytes32String("Albiccocca Albisole");
+    proposal3 = ethers.utils.formatBytes32String("Pera sudtirol");
+
+    await voting
+      .connect(testOwner)
+      .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3]);
     console.log(await voting.proposals(0));
     console.log(await voting.proposals(1));
     console.log(await voting.proposals(2));
+    console.log(await voting.proposalsCount());
+  });
+
+  it("Owner try to init voting again", async function () {
+    proposal1 = ethers.utils.formatBytes32String("Mela Melinda");
+    proposal2 = ethers.utils.formatBytes32String("Albiccocca Albisole");
+    proposal3 = ethers.utils.formatBytes32String("Pera sudtirol");
+
+    await expect(
+      voting
+        .connect(testOwner)
+        .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3])
+    ).to.be.revertedWithCustomError(voting, "votingNotClosed");
   });
 
   it("Owner add a proposal", async function () {
     await voting
       .connect(testOwner)
       .addProposal(ethers.utils.formatBytes32String("Limone Siracusa"));
+    console.log(await voting.proposals(3));
+    console.log(await voting.proposalsCount());
   });
 
   it("Users votes for a proposal", async function () {
-    await expect(voting.connect(voter1).vote(1, { value: toWei(1) })).to.emit(
+    await expect(voting.connect(voter1).vote(0, { value: toWei(1) })).to.emit(
       voting,
       "Vote"
     );
-    await expect(voting.connect(voter2).vote(2, { value: toWei(1) })).to.emit(
+    await expect(voting.connect(voter2).vote(1, { value: toWei(1) })).to.emit(
       voting,
       "Vote"
     );
-    await expect(voting.connect(voter3).vote(3, { value: toWei(1) })).to.emit(
+    await expect(voting.connect(voter3).vote(2, { value: toWei(1) })).to.emit(
       voting,
       "Vote"
     );
@@ -81,7 +97,7 @@ describe("Voting contract", function (accounts) {
 
   it("User try to vote for the second time", async function () {
     await expect(
-      voting.connect(voter1).vote(1, { value: toWei(1) })
+      voting.connect(voter1).vote(0, { value: toWei(1) })
     ).to.revertedWithCustomError(voting, "voted");
   });
 
@@ -93,7 +109,7 @@ describe("Voting contract", function (accounts) {
   });
 
   it("time fast forward by 5 mintes", async function () {
-    await time.increase(6000);
+    await time.increase(6500);
   });
 
   it("Owner try to withdraw fund when voting is not closed", async function () {
@@ -106,7 +122,9 @@ describe("Voting contract", function (accounts) {
   it("Owner try to close lapsed voting", async function () {
     console.log(BigNumber.from(await voting.votingEndTime()).toString());
     await voting.connect(testOwner).closeVoting();
-    console.log(await voting.winningProposalId());
+    num = await voting.winningProposalId();
+    console.log(num.toString());
+    console.log(await voting.latestWinner());
   });
 
   it("User try to vote in lapsed voting", async function () {
@@ -129,5 +147,16 @@ describe("Voting contract", function (accounts) {
     await voting
       .connect(testOwner)
       .withdrawDonations(testOwner.address, amount);
+  });
+
+  it("Owner init for the second time voting system", async function () {
+    proposal1 = ethers.utils.formatBytes32String("Mela Melinda");
+    proposal2 = ethers.utils.formatBytes32String("Albiccocca Albisole");
+    proposal3 = ethers.utils.formatBytes32String("Pera sudtirol");
+
+    voting
+      .connect(testOwner)
+      .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3]);
+    console.log(await voting.proposalsCount());
   });
 });

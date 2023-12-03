@@ -24,6 +24,7 @@ contract VotingContract is Ownable {
     bool public isVotingClosed;
     uint256 public winningProposalId;
     uint256 public winningProposalVotes;
+    Proposal public latestWinner;
     uint256 public proposalsCount;
     address payable vaultAddress;
 
@@ -38,13 +39,24 @@ contract VotingContract is Ownable {
         bool voted;
     }
 
-    mapping(uint256 => Proposal) public proposals;
-    mapping(address => Voter) public voters;
+    Proposal[] public proposals;
+
+    address[] public addressRegistered;
+
+    mapping(address => Voter) voters;
 
     //Modifier that check if Voting period is not lapsed
     modifier onlyDuringVotingPeriod() {
         if (block.timestamp > votingEndTime) {
             revert timeElapsed();
+        }
+        _;
+    }
+
+    //Modifier that check if Voting is closed
+    modifier onlyClosedVoting() {
+        if (!isVotingClosed) {
+            revert votingNotClosed();
         }
         _;
     }
@@ -68,41 +80,24 @@ contract VotingContract is Ownable {
     event Vote(uint256 indexed proposalId, address indexed voter);
     event VotingClosed(uint256 winningProposalId, uint256 winningProposalVotes);
 
-    constructor(
-        address payable _vaultAddress,
-        uint256 _votingEndTime,
-        uint256 _donationGoal,
-        bytes32[] memory proposalNames
-    ) {
+    constructor(address payable _vaultAddress) {
         vaultAddress = _vaultAddress;
-        votingEndTime = _votingEndTime + block.timestamp;
-        donationGoal = _donationGoal;
-        isVotingClosed = false;
         proposalsCount = 0;
-        for (uint i = 1; i < proposalNames.length; i++) {
-            proposalsCount++;
-            proposals[proposalsCount] = Proposal(proposalNames[i], 0);
-        }
+        isVotingClosed = true;
     }
 
     //Function to add proposal to exsiting
     function addProposal(bytes32 name) external onlyOwner {
+        proposals.push(Proposal(name, 0));
         proposalsCount++;
-        proposals[proposalsCount] = Proposal(name, 0);
     }
 
     //Function to vote a selected id proposal with fund needed
     function vote(
         uint256 proposalId
-    )
-        external
-        payable
-        onlyDuringVotingPeriod
-        donationRequired
-        onlyNewVoter
-    {
+    ) external payable onlyDuringVotingPeriod donationRequired onlyNewVoter {
         //Check
-        if (proposalId == 0) {
+        if (proposalId > proposals.length && proposals.length == 0) {
             revert proposalNotValid();
         }
 
@@ -112,6 +107,7 @@ contract VotingContract is Ownable {
         moveFound(_amount);
 
         //Voter assestment
+        addressRegistered.push(msg.sender);
         Voter storage voter = voters[msg.sender];
         voter.vote = proposalId;
         voter.weightVote = _amount;
@@ -137,23 +133,21 @@ contract VotingContract is Ownable {
     //Function to find winning proposal
     function findWinningProposal() internal {
         uint256 maxVotes = 0;
-        for (uint256 i = 1; i <= proposalsCount; i++) {
+        for (uint256 i = 0; i < proposalsCount; i++) {
             if (proposals[i].weidhtedVotes > maxVotes) {
                 maxVotes = proposals[i].weidhtedVotes;
                 winningProposalId = i;
                 winningProposalVotes = maxVotes;
             }
         }
+        latestWinner = proposals[winningProposalId];
     }
 
     //Function to withdraw donations
     function withdrawDonations(
         address payable to,
         uint256 amount
-    ) external onlyOwner {
-        if (!isVotingClosed) {
-            revert votingNotClosed();
-        }
+    ) external onlyOwner onlyClosedVoting {
         DonationVault(vaultAddress).withdraw(to, amount);
     }
 
@@ -163,5 +157,35 @@ contract VotingContract is Ownable {
         if (!sent) {
             revert ethNotSent();
         }
+    }
+
+    //Function to init voting system
+    function initVoting(
+        uint256 _votingEndTime,
+        uint256 _donationGoal,
+        bytes32[] memory proposalNames
+    ) external onlyOwner onlyClosedVoting {
+        resetVoters();
+        deleteProposal();
+        votingEndTime = _votingEndTime + block.timestamp;
+        donationGoal = _donationGoal;
+        for (uint i = 0; i < proposalNames.length; i++) {
+            proposals.push(Proposal(proposalNames[i], 0));
+            proposalsCount++;
+        }
+        isVotingClosed = false;
+    }
+
+    function resetVoters() internal {
+        for (uint i = 0; i < addressRegistered.length; i++) {
+            Voter storage voter = voters[addressRegistered[i]];
+            voter.voted = false;
+            voter.weightVote = 0;
+            voter.vote = 0;
+        }
+    }
+
+    function deleteProposal() internal {
+        delete proposals;
     }
 }

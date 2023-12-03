@@ -740,8 +740,8 @@
       ]
     },
     "C:\\Users\\elber\\Desktop\\StefanoBertaccini\\MasterZDev\\Otti\\contracts\\VotingContract .sol": {
-      "lastModificationDate": 1701543790974,
-      "contentHash": "f1bdc6dce0e630f9336cc02b6aa048c0",
+      "lastModificationDate": 1701617128228,
+      "contentHash": "7eb500dd7e47f604f607f53d855c1291",
       "sourceName": "contracts/VotingContract .sol",
       "solcConfig": {
         "version": "0.8.19",
