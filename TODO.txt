@@ -1,17 +1,26 @@
 1) CroudSystem Contract
-    A) Controllare il contratto di Ballot e di voting se ci sono delle librerie utili
-    B) Capire come controllare la transazione e di conseguenza accettare il voto passato
-    C) Capire come avviare la seconda funding
-    D) Valutare i primi tempi di setting per la proposta Amount/Time
-    E.3) Capire se collegare il Vault per tenere il valore raccolto dal funding
+    A) Controllare il contratto di Ballot e di voting se ci sono delle librerie utili DONE
+    B) Capire come controllare la transazione e di conseguenza accettare il voto passato DONE
+    C) Capire come avviare la seconda funding DONE
+    D) Valutare i primi tempi di setting per la proposta Amount/Time 
+    E.3) Capire se collegare il Vault per tenere il valore raccolto dal funding DONE
+    F.5) Aggiungere test per l'invio dei token ai donatori
 
 2) NFT Product
     A) Dare una forma all'NFT e ai dati che bisogna caricare, soprattutto se poi finiscono su openSea 
     B.4) Capire se deve essere passato qua l'hash del pdf per poter poi caricarlo sul contratto notarize
-    C) Sarebbe interessante poter caricare delle versioni successive sul prodotto già analizzato
+    C) Sarebbe interessante poter caricare delle versioni successive sul prodotto già analizzato DONE
+    D) Test NFT contract
+    E) Check uri for the loaded NFT
+    F) Valutare anche come le analisi potrebbero essere aggiunte al NFT esistente
 
 3) Vault
-    A) Integrare il vault tale per cui possegga tutte le donazioni e non possa trasferirli se non dall'owner
+    A) Integrare il vault tale per cui possegga tutte le donazioni e non possa trasferirli se non dall'owner DONE
 
 4) Notarize 
-    A) Integrare la notarizzazione del pdf per riflettere a delle possibili manomissioni e check esterni
+    A) Integrare la notarizzazione del pdf per riflettere a delle possibili manomissioni e check esterni DONE
+
+5) Otti
+    A) Gestire le reward per le donazioni in base al pagamento
+    B) Assegnare un benchmark quanti token dare per le donazioni
+    C) Si potrebbe pensare a un nuovo contratto per la ricezione delle reward e il burn dei token

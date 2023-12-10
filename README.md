@@ -31,23 +31,24 @@ Al laboratio verrà presentata la possibilità di avere un profilo. abilitato al
 Contract:
 
 VotingSystem ->
-    Contratto con un sistema di voto per eleggere il prossimo prodotto da far analizzare.
-    Questo accessibile tramite una piccola donazione al processo.
-    Il periodo di voto sarà una media ponderata tra il tempo del laboratorio per eseguire l'analisi e un tempo per raccogliere 60/80% dell'analisi.
-    All'interno del contratto ci dovrà essere la proposta con già dei prodotti listati, non avrebbe senso lasciar la possibilità di aggiungere prodotti, si creerebbe una raccolta gigantesca di dati inutili. Anche se potrebbe aver senso con scopi futuri.
+Contratto con un sistema di voto per eleggere il prossimo prodotto da far analizzare.
+Questo accessibile tramite una piccola donazione al processo.
+Il periodo di voto sarà una media ponderata tra il tempo del laboratorio per eseguire l'analisi e un tempo per raccogliere 60/80% dell'analisi.
+All'interno del contratto ci dovrà essere la proposta con già dei prodotti listati, non avrebbe senso lasciar la possibilità di aggiungere prodotti, si creerebbe una raccolta gigantesca di dati inutili. Anche se potrebbe aver senso con scopi futuri.
 
 NFT1155->
-    Dovrà rappresentare le caratteristiche di un prodotto e del certificato lasciato dal laboratorio di ricerca, nel tempo gli NFT potrebbero avere più release per permettere alle aziende di farsi ricertificare.
+Dovrà rappresentare le caratteristiche di un prodotto e del certificato lasciato dal laboratorio di ricerca, nel tempo gli NFT potrebbero avere più release per permettere alle aziende di farsi ricertificare.
 
     Definire gli attributi utili
 
 Notarize->
-    Sistema basic di notarizzazione per salvare l'hash del certificato e poter essere inattaccabili dai deepFake e per presentare una effettiva copia del certificato
+Sistema basic di notarizzazione per salvare l'hash del certificato e poter essere inattaccabili dai deepFake e per presentare una effettiva copia del certificato
 
 Vault->
-    Tenere su un altro contratto il valore raccolto
+Tenere su un altro contratto il valore raccolto
+
+OTTI Token->
+Token che verrà rilasciato in cambio delle donazioni, inizialmente sarà utilizzato come contro valore per lasciare ai donatori qualcosa di concreto. Dopo il lancio del progetto, a seguito di possibili sviluppi, si vorrebbe adottare una metodologia di riscatto punti fedeltà. Dei prodotti di aziende che hanno voluto partecipare al processo di analisi volontariamente verranno spediti ai richiedenti in cambio di Otti tokens.
 
 FE->
-    Una lista di prodotti con il relativo certificato, filtrabile per catgegorie, e degli indicatori flessibili per la presenza di pesticidi e altro.
-
-
+Una lista di prodotti con il relativo certificato, filtrabile per catgegorie, e degli indicatori flessibili per la presenza di pesticidi e altro.

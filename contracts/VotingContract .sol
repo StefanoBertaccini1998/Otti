@@ -25,8 +25,10 @@ contract VotingContract is Ownable {
     uint256 public winningProposalId;
     uint256 public winningProposalVotes;
     Proposal public latestWinner;
-    uint256 public proposalsCount;
     address payable vaultAddress;
+    Proposal[] public proposals;
+    address[] public addressRegistered;
+    mapping(address => Voter) voters;
 
     struct Proposal {
         bytes32 name;
@@ -38,12 +40,6 @@ contract VotingContract is Ownable {
         uint256 weightVote;
         bool voted;
     }
-
-    Proposal[] public proposals;
-
-    address[] public addressRegistered;
-
-    mapping(address => Voter) voters;
 
     //Modifier that check if Voting period is not lapsed
     modifier onlyDuringVotingPeriod() {
@@ -82,14 +78,12 @@ contract VotingContract is Ownable {
 
     constructor(address payable _vaultAddress) {
         vaultAddress = _vaultAddress;
-        proposalsCount = 0;
         isVotingClosed = true;
     }
 
     //Function to add proposal to exsiting
     function addProposal(bytes32 name) external onlyOwner {
         proposals.push(Proposal(name, 0));
-        proposalsCount++;
     }
 
     //Function to vote a selected id proposal with fund needed
@@ -133,7 +127,7 @@ contract VotingContract is Ownable {
     //Function to find winning proposal
     function findWinningProposal() internal {
         uint256 maxVotes = 0;
-        for (uint256 i = 0; i < proposalsCount; i++) {
+        for (uint256 i = 0; i < proposals.length; i++) {
             if (proposals[i].weidhtedVotes > maxVotes) {
                 maxVotes = proposals[i].weidhtedVotes;
                 winningProposalId = i;
@@ -171,20 +165,23 @@ contract VotingContract is Ownable {
         donationGoal = _donationGoal;
         for (uint i = 0; i < proposalNames.length; i++) {
             proposals.push(Proposal(proposalNames[i], 0));
-            proposalsCount++;
         }
         isVotingClosed = false;
     }
 
+    //Function to reset all partecipant
     function resetVoters() internal {
         for (uint i = 0; i < addressRegistered.length; i++) {
             Voter storage voter = voters[addressRegistered[i]];
-            voter.voted = false;
-            voter.weightVote = 0;
-            voter.vote = 0;
+            if (voter.voted) {
+                voter.voted = false;
+                voter.weightVote = 0;
+                voter.vote = 0;
+            }
         }
     }
 
+    //Function to empty the proposal array
     function deleteProposal() internal {
         delete proposals;
     }

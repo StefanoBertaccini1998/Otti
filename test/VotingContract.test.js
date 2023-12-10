@@ -144,6 +144,7 @@ describe("Voting contract", function (accounts) {
 
   it("Owner try to withdraw fund", async function () {
     amount = await voting.donationAmount();
+    console.log(amount);
     await voting
       .connect(testOwner)
       .withdrawDonations(testOwner.address, amount);

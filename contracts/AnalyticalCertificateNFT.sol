@@ -10,6 +10,7 @@ contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
 
     //Counter
     Counters.Counter private tokenIdCounter;
+    address[] public authorizedLabs;
 
     //Role for authorized labs
     bytes32 public constant AUTHORIZED_LAB_ROLE =
@@ -28,16 +29,13 @@ contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
         _setupRole(AUTHORIZED_LAB_ROLE, msg.sender);
     }
 
-    //Function that add new certificate for a new product
-    function addCertificate(
+    //Function that add new product analysis
+    function newProductAnalysis(
         string memory _productHash
     ) external onlyRole(AUTHORIZED_LAB_ROLE) {
         tokenIdCounter.increment();
-
         uint256 newTokenId = tokenIdCounter.current();
-
         _mint(address(this), newTokenId, 1, "");
-
         emit CertificateAdded(newTokenId, _productHash);
     }
 
@@ -46,15 +44,15 @@ contract AnalyticalCertificateNFT is ERC1155, AccessControlEnumerable {
         uint256 _tokenId
     ) external onlyRole(AUTHORIZED_LAB_ROLE) {
         _mint(msg.sender, _tokenId, 1, "");
-
         emit AnalysisAdded(_tokenId);
     }
 
-    //Funzione that obtain a list of authorized labs
+    //Funzione that add an authorized lab
     function addAuthorizedLab(
         address _authorizedLab
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(AUTHORIZED_LAB_ROLE, _authorizedLab);
+        authorizedLabs.push(_authorizedLab);
     }
 
     //Function needed for coflict interfaces
