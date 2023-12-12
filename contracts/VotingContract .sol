@@ -110,7 +110,7 @@ contract VotingContract is Ownable {
 
         //Voter assestment
         addressRegistered.push(msg.sender);
-        Voter storage voter = voters[msg.sender];
+        Voter me voter = voters[msg.sender];
         voter.vote = proposalId;
         voter.weightVote = _amount;
         voter.voted = true;
@@ -197,5 +197,9 @@ contract VotingContract is Ownable {
     //Function to empty the proposal array
     function deleteProposal() internal {
         delete proposals;
+    }
+
+    function getProposalLength() public view returns (uint256){
+        return proposals.length;
     }
 }

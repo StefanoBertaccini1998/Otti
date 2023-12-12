@@ -74,7 +74,7 @@ describe("Voting contract", function (accounts) {
     console.log(await voting.proposals(0));
     console.log(await voting.proposals(1));
     console.log(await voting.proposals(2));
-    console.log(await voting.proposals().getArrayLength());
+    console.log(await voting.getProposalLength());
   });
 
   it("Owner try to init voting again", async function () {
@@ -94,7 +94,7 @@ describe("Voting contract", function (accounts) {
       .connect(testOwner)
       .addProposal(ethers.utils.formatBytes32String("Limone Siracusa"));
     console.log(await voting.proposals(3));
-    console.log(await voting.proposals().getArrayLength());
+    console.log(await voting.getProposalLength());
   });
 
   it("Users votes for a proposal", async function () {
@@ -208,6 +208,6 @@ describe("Voting contract", function (accounts) {
     voting
       .connect(testOwner)
       .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3]);
-    console.log(await voting.proposals().getArrayLength());
+    console.log(await voting.getProposalLength());
   });
 });
