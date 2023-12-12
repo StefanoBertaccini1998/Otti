@@ -4,7 +4,8 @@
     C) Capire come avviare la seconda funding DONE
     D) Valutare i primi tempi di setting per la proposta Amount/Time 
     E.3) Capire se collegare il Vault per tenere il valore raccolto dal funding DONE
-    F.5) Aggiungere test per l'invio dei token ai donatori
+    F.5) Aggiungere test per l'invio dei token ai donatori DONE
+    G) Aggiungere possibilità di pareggio con spareggio per n. voti
 
 2) NFT Product
     A) Dare una forma all'NFT e ai dati che bisogna caricare, soprattutto se poi finiscono su openSea 
@@ -21,6 +22,6 @@
     A) Integrare la notarizzazione del pdf per riflettere a delle possibili manomissioni e check esterni DONE
 
 5) Otti
-    A) Gestire le reward per le donazioni in base al pagamento
-    B) Assegnare un benchmark quanti token dare per le donazioni
-    C) Si potrebbe pensare a un nuovo contratto per la ricezione delle reward e il burn dei token
+    A) Gestire le reward per le donazioni in base al pagamento DONE
+    B) Assegnare un benchmark quanti token dare per le donazioni DONE
+    C) Si potrebbe pensare a un nuovo contratto per la ricezione delle reward e il burn dei token TODO

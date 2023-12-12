@@ -74,7 +74,7 @@ describe("Voting contract", function (accounts) {
     console.log(await voting.proposals(0));
     console.log(await voting.proposals(1));
     console.log(await voting.proposals(2));
-    console.log(await voting.proposals().lenght);
+    console.log(await voting.proposals().getArrayLength());
   });
 
   it("Owner try to init voting again", async function () {
@@ -94,7 +94,7 @@ describe("Voting contract", function (accounts) {
       .connect(testOwner)
       .addProposal(ethers.utils.formatBytes32String("Limone Siracusa"));
     console.log(await voting.proposals(3));
-    console.log(await voting.proposals().lenght);
+    console.log(await voting.proposals().getArrayLength());
   });
 
   it("Users votes for a proposal", async function () {
@@ -115,7 +115,7 @@ describe("Voting contract", function (accounts) {
     voter2Value = await otti.balanceOf(voter2.address);
     console.log("Voter2 has otti: " + voter2Value);
 
-    console.log("Voter3s vote");
+    console.log("Voter3 vote");
     await expect(voting.connect(voter3).vote(2, { value: toWei(3) })).to.emit(
       voting,
       "Vote"
@@ -127,11 +127,11 @@ describe("Voting contract", function (accounts) {
         voter1Value +
         ", Voter2 has " +
         voter2Value +
-        ", Voter3 has" +
+        ", Voter3 has " +
         voter3Value
     );
     fund = await voting.donationAmount();
-    console.log("Fund has tokena amount of." + fund.toString());
+    console.log("Fund has tokena amount of: " + fund.toString());
   });
 
   it("User try to vote without fund", async function () {
@@ -142,6 +142,7 @@ describe("Voting contract", function (accounts) {
   });
 
   it("User try to vote for the second time", async function () {
+    console.log(await voting.voters(voter1.address).voted);
     await expect(
       voting.connect(voter1).vote(0, { value: toWei(1) })
     ).to.revertedWithCustomError(voting, "voted");
@@ -207,6 +208,6 @@ describe("Voting contract", function (accounts) {
     voting
       .connect(testOwner)
       .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3]);
-    console.log(await voting.proposals().lenght);
+    console.log(await voting.proposals().getArrayLength());
   });
 });

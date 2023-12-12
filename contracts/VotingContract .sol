@@ -24,17 +24,18 @@ contract VotingContract is Ownable {
     uint256 public donationAmount;
     bool public isVotingClosed;
     uint256 public winningProposalId;
-    uint256 public winningProposalVotes;
+    uint256 public winningDonationVotes;
     Proposal public latestWinner;
     address payable vaultAddress;
     Proposal[] public proposals;
     address[] public addressRegistered;
-    mapping(address => Voter) voters;
+    mapping(address => Voter) public voters;
     address public ottiToken;
 
     struct Proposal {
         bytes32 name;
         uint256 weidhtedVotes;
+        uint256 votes;
     }
 
     struct Voter {
@@ -86,7 +87,7 @@ contract VotingContract is Ownable {
 
     //Function to add proposal to exsiting
     function addProposal(bytes32 name) external onlyOwner {
-        proposals.push(Proposal(name, 0));
+        proposals.push(Proposal(name, 0,0));
     }
 
     //Function to vote a selected id proposal with fund needed
@@ -105,7 +106,6 @@ contract VotingContract is Ownable {
 
         //Calculate 10% of token to send
         uint amountToSend = _amount / 10;
-
         SafeERC20.safeTransfer(IERC20(ottiToken), msg.sender, amountToSend);
 
         //Voter assestment
@@ -116,7 +116,9 @@ contract VotingContract is Ownable {
         voter.voted = true;
 
         //Weithed vote is recorded as the amount of donation
-        proposals[proposalId].weidhtedVotes += _amount;
+        Proposal storage prop = proposals[proposalId];
+        prop.weidhtedVotes += _amount;
+        prop.votes += 1;
 
         //Event
         emit Vote(proposalId, msg.sender);
@@ -129,17 +131,20 @@ contract VotingContract is Ownable {
         }
         findWinningProposal();
         isVotingClosed = true;
-        emit VotingClosed(winningProposalId, winningProposalVotes);
+        emit VotingClosed(winningProposalId, winningDonationVotes);
     }
 
     //Function to find winning proposal
     function findWinningProposal() internal {
+        uint256 maxWeightVotes = 0;
         uint256 maxVotes = 0;
         for (uint256 i = 0; i < proposals.length; i++) {
-            if (proposals[i].weidhtedVotes > maxVotes) {
-                maxVotes = proposals[i].weidhtedVotes;
+            Proposal storage prop = proposals[i];
+            if (prop.weidhtedVotes > maxWeightVotes || prop.weidhtedVotes == maxWeightVotes && prop.votes > maxVotes) {
+                maxWeightVotes = prop.weidhtedVotes;
+                maxVotes = prop.votes;
                 winningProposalId = i;
-                winningProposalVotes = maxVotes;
+                winningDonationVotes = maxWeightVotes;
             }
         }
         latestWinner = proposals[winningProposalId];
@@ -172,7 +177,7 @@ contract VotingContract is Ownable {
         votingEndTime = _votingEndTime + block.timestamp;
         donationGoal = _donationGoal;
         for (uint i = 0; i < proposalNames.length; i++) {
-            proposals.push(Proposal(proposalNames[i], 0));
+            proposals.push(Proposal(proposalNames[i], 0, 0));
         }
         isVotingClosed = false;
     }
