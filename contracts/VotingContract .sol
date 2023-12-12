@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./utils/DonationVault.sol";
 //import "./utils/PriceConsumer.sol";
@@ -29,6 +30,7 @@ contract VotingContract is Ownable {
     Proposal[] public proposals;
     address[] public addressRegistered;
     mapping(address => Voter) voters;
+    address public ottiToken;
 
     struct Proposal {
         bytes32 name;
@@ -76,9 +78,10 @@ contract VotingContract is Ownable {
     event Vote(uint256 indexed proposalId, address indexed voter);
     event VotingClosed(uint256 winningProposalId, uint256 winningProposalVotes);
 
-    constructor(address payable _vaultAddress) {
+    constructor(address payable _vaultAddress, address ottiAddress) {
         vaultAddress = _vaultAddress;
         isVotingClosed = true;
+        ottiToken = ottiAddress;
     }
 
     //Function to add proposal to exsiting
@@ -99,6 +102,11 @@ contract VotingContract is Ownable {
         uint _amount = msg.value;
         donationAmount += _amount;
         moveFound(_amount);
+
+        //Calculate 10% of token to send
+        uint amountToSend = _amount / 10;
+
+        SafeERC20.safeTransfer(IERC20(ottiToken), msg.sender, amountToSend);
 
         //Voter assestment
         addressRegistered.push(msg.sender);

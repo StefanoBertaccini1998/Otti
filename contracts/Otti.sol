@@ -8,11 +8,17 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 //Basic contract of token utility
 //The scope of this token is future release of fedelity rewards
 contract Otti is Ownable, ERC20 {
-    constructor(
-        string memory _name,
-        string memory _sym,
+    constructor(string memory _name, string memory _sym) ERC20(_name, _sym) {}
+
+    function mint(address account, uint256 amount) external onlyOwner {
+        _mint(account, amount);
+    }
+
+    function transferOwnershipToContract(
+        address newOwner,
         uint256 _initialSupply
-    ) ERC20(_name, _sym) {
-        _mint(msg.sender, _initialSupply * (uint(1e18)));
+    ) external onlyOwner {
+        transferOwnership(newOwner);
+        _mint(newOwner, _initialSupply * (uint(1e18)));
     }
 }

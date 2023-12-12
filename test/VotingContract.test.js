@@ -23,15 +23,42 @@ describe("Voting contract", function (accounts) {
 
     await vault.deployed();
 
+    expect(vault.address).to.be.not.equal(ethers.ZeroAddress);
+    expect(vault.address).to.match(/0x[0-9a-fA-F]{40}/);
+
+    const Otti = await ethers.getContractFactory("Otti");
+
+    otti = await Otti.deploy("Otti", "Oti");
+
+    await otti.deployed();
+
+    expect(otti.address).to.be.not.equal(ethers.ZeroAddress);
+    expect(otti.address).to.match(/0x[0-9a-fA-F]{40}/);
+
+    console.log("Otti contract supply:" + (await otti.totalSupply()));
+    console.log("Owner supply:" + (await otti.balanceOf(testOwner.address)));
+
     const VotingContract = await ethers.getContractFactory("VotingContract");
 
-    voting = await VotingContract.deploy(vault.address);
+    voting = await VotingContract.deploy(vault.address, otti.address);
 
     await voting.deployed();
 
     votingAddress = await voting.address;
+    console.log("Voting contract deployed @:" + votingAddress);
+
     await vault.connect(testOwner).transferOwnershipToContract(votingAddress);
-    console.log("Ballot contract deployed @:" + votingAddress);
+    console.log("Vault change ownerShip with @:" + votingAddress);
+
+    await otti
+      .connect(testOwner)
+      .transferOwnershipToContract(votingAddress, 1000000);
+    console.log("Otti change ownerShip with @:" + votingAddress);
+
+    console.log(
+      "Voting contract supply:" + (await otti.balanceOf(votingAddress))
+    );
+
     expect(votingAddress).to.be.not.equal(ethers.ZeroAddress);
     expect(votingAddress).to.match(/0x[0-9a-fA-F]{40}/);
   });
@@ -47,7 +74,7 @@ describe("Voting contract", function (accounts) {
     console.log(await voting.proposals(0));
     console.log(await voting.proposals(1));
     console.log(await voting.proposals(2));
-    console.log(await voting.proposalsCount());
+    console.log(await voting.proposals().lenght);
   });
 
   it("Owner try to init voting again", async function () {
@@ -67,25 +94,44 @@ describe("Voting contract", function (accounts) {
       .connect(testOwner)
       .addProposal(ethers.utils.formatBytes32String("Limone Siracusa"));
     console.log(await voting.proposals(3));
-    console.log(await voting.proposalsCount());
+    console.log(await voting.proposals().lenght);
   });
 
   it("Users votes for a proposal", async function () {
+    console.log("Voter1 vote");
     await expect(voting.connect(voter1).vote(0, { value: toWei(1) })).to.emit(
       voting,
       "Vote"
     );
-    await expect(voting.connect(voter2).vote(1, { value: toWei(1) })).to.emit(
-      voting,
-      "Vote"
-    );
-    await expect(voting.connect(voter3).vote(2, { value: toWei(1) })).to.emit(
-      voting,
-      "Vote"
-    );
 
+    voter1Value = await otti.balanceOf(voter1.address);
+    console.log("Voter1 has otti: " + voter1Value);
+
+    console.log("Voter2 vote");
+    await expect(voting.connect(voter2).vote(1, { value: toWei(2) })).to.emit(
+      voting,
+      "Vote"
+    );
+    voter2Value = await otti.balanceOf(voter2.address);
+    console.log("Voter2 has otti: " + voter2Value);
+
+    console.log("Voter3s vote");
+    await expect(voting.connect(voter3).vote(2, { value: toWei(3) })).to.emit(
+      voting,
+      "Vote"
+    );
+    voter3Value = await otti.balanceOf(voter3.address);
+    console.log("Voter3 has otti: " + voter3Value);
+    console.log(
+      "Voter1 has " +
+        voter1Value +
+        ", Voter2 has " +
+        voter2Value +
+        ", Voter3 has" +
+        voter3Value
+    );
     fund = await voting.donationAmount();
-    console.log(fund.toString());
+    console.log("Fund has tokena amount of." + fund.toString());
   });
 
   it("User try to vote without fund", async function () {
@@ -120,10 +166,13 @@ describe("Voting contract", function (accounts) {
   });
 
   it("Owner try to close lapsed voting", async function () {
-    console.log(BigNumber.from(await voting.votingEndTime()).toString());
+    console.log(
+      "Time that have to lapse for the ending " +
+        BigNumber.from(await voting.votingEndTime()).toString()
+    );
     await voting.connect(testOwner).closeVoting();
     num = await voting.winningProposalId();
-    console.log(num.toString());
+    console.log("Winning proposal have id:" + num.toString());
     console.log(await voting.latestWinner());
   });
 
@@ -144,7 +193,7 @@ describe("Voting contract", function (accounts) {
 
   it("Owner try to withdraw fund", async function () {
     amount = await voting.donationAmount();
-    console.log(amount);
+    console.log("Donation in Vault recorded is:" + amount);
     await voting
       .connect(testOwner)
       .withdrawDonations(testOwner.address, amount);
@@ -158,6 +207,6 @@ describe("Voting contract", function (accounts) {
     voting
       .connect(testOwner)
       .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3]);
-    console.log(await voting.proposalsCount());
+    console.log(await voting.proposals().lenght);
   });
 });
