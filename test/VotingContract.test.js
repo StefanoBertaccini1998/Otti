@@ -10,10 +10,13 @@ const toWei = (x) => web3.utils.toWei(BigNumber.from(x).toString());
 
 require("@nomicfoundation/hardhat-chai-matchers");
 
+const { ethers, upgrades } = require("hardhat");
+
 const minuteEnding = 6000;
 const eurValue = 100;
 
 describe("Voting contract", function (accounts) {
+  
   it("system setup", async function () {
     [testOwner, voter1, voter2, voter3, voter4, voter5] =
       await ethers.getSigners();
@@ -40,9 +43,10 @@ describe("Voting contract", function (accounts) {
 
     const VotingContract = await ethers.getContractFactory("VotingContract");
 
-    voting = await VotingContract.deploy(vault.address, otti.address);
-
+    voting = await VotingContract.deploy();
     await voting.deployed();
+
+    voting.initialize(vault.address, otti.address);
 
     votingAddress = await voting.address;
     console.log("Voting contract deployed @:" + votingAddress);
@@ -205,9 +209,22 @@ describe("Voting contract", function (accounts) {
     proposal2 = ethers.utils.formatBytes32String("Albiccocca Albisole");
     proposal3 = ethers.utils.formatBytes32String("Pera sudtirol");
 
-    voting
+    await voting
       .connect(testOwner)
       .initVoting(minuteEnding, eurValue, [proposal1, proposal2, proposal3]);
     console.log(await voting.getProposalLength());
   });
+
+  it("Users votes for a proposal for the second time", async function () {
+    console.log("Voter1 vote for the second time");
+    voter1Value = await otti.balanceOf(voter1.address);
+    console.log("Voter1 has otti: " + voter1Value);
+    await expect(voting.connect(voter1).vote(0, { value: toWei(1) })).to.emit(
+      voting,
+      "Vote"
+    );
+    voter1Value = await otti.balanceOf(voter1.address);
+    console.log("Voter1 has otti2: " + voter1Value);
+    });
+
 });

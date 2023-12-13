@@ -4,6 +4,8 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./utils/DonationVault.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 //import "./utils/PriceConsumer.sol";
 
 //Errors
@@ -18,7 +20,8 @@ error proposalNotPending();
 error ethNotSent();
 
 //Voting contract system
-contract VotingContract is Ownable {
+contract VotingContract is OwnableUpgradeable {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
     uint256 public votingEndTime;
     uint256 public donationGoal;
     uint256 public donationAmount;
@@ -27,10 +30,12 @@ contract VotingContract is Ownable {
     uint256 public winningDonationVotes;
     Proposal public latestWinner;
     address payable vaultAddress;
-    Proposal[] public proposals;
+    CountersUpgradeable.Counter public proposal_counter;
+    mapping(uint256 => Proposal) public proposals;
     address[] public addressRegistered;
     mapping(address => Voter) public voters;
     address public ottiToken;
+
 
     struct Proposal {
         bytes32 name;
@@ -77,9 +82,11 @@ contract VotingContract is Ownable {
     }
 
     event Vote(uint256 indexed proposalId, address indexed voter);
+    event NewProposal(bytes32 name);
     event VotingClosed(uint256 winningProposalId, uint256 winningProposalVotes);
-
-    constructor(address payable _vaultAddress, address ottiAddress) {
+    
+    function initialize(address payable _vaultAddress, address ottiAddress) external initializer {
+        __Ownable_init();
         vaultAddress = _vaultAddress;
         isVotingClosed = true;
         ottiToken = ottiAddress;
@@ -87,7 +94,10 @@ contract VotingContract is Ownable {
 
     //Function to add proposal to exsiting
     function addProposal(bytes32 name) external onlyOwner {
-        proposals.push(Proposal(name, 0,0));
+        uint256 counter = proposal_counter.current();
+        proposals[counter] = Proposal(name, 0,0);
+        proposal_counter.increment();
+        emit NewProposal(name);
     }
 
     //Function to vote a selected id proposal with fund needed
@@ -95,7 +105,7 @@ contract VotingContract is Ownable {
         uint256 proposalId
     ) external payable onlyDuringVotingPeriod donationRequired onlyNewVoter {
         //Check
-        if (proposalId > proposals.length && proposals.length == 0) {
+        if (proposalId > proposal_counter.current() && proposal_counter.current() == 0) {
             revert proposalNotValid();
         }
 
@@ -110,7 +120,7 @@ contract VotingContract is Ownable {
 
         //Voter assestment
         addressRegistered.push(msg.sender);
-        Voter me voter = voters[msg.sender];
+        Voter storage voter = voters[msg.sender];
         voter.vote = proposalId;
         voter.weightVote = _amount;
         voter.voted = true;
@@ -138,7 +148,7 @@ contract VotingContract is Ownable {
     function findWinningProposal() internal {
         uint256 maxWeightVotes = 0;
         uint256 maxVotes = 0;
-        for (uint256 i = 0; i < proposals.length; i++) {
+        for (uint256 i = 0; i <= proposal_counter.current(); i++) {
             Proposal storage prop = proposals[i];
             if (prop.weidhtedVotes > maxWeightVotes || prop.weidhtedVotes == maxWeightVotes && prop.votes > maxVotes) {
                 maxWeightVotes = prop.weidhtedVotes;
@@ -177,7 +187,9 @@ contract VotingContract is Ownable {
         votingEndTime = _votingEndTime + block.timestamp;
         donationGoal = _donationGoal;
         for (uint i = 0; i < proposalNames.length; i++) {
-            proposals.push(Proposal(proposalNames[i], 0, 0));
+            uint256 counter = proposal_counter.current();
+            proposals[counter] = Proposal(proposalNames[i], 0, 0);
+            proposal_counter.increment();
         }
         isVotingClosed = false;
     }
@@ -195,11 +207,11 @@ contract VotingContract is Ownable {
     }
 
     //Function to empty the proposal array
-    function deleteProposal() internal {
-        delete proposals;
+    function deleteProposal() public {
+        proposal_counter.reset();
     }
 
     function getProposalLength() public view returns (uint256){
-        return proposals.length;
+        return proposal_counter.current();
     }
 }
