@@ -1,4 +1,5 @@
-# Otti project by Stefano Bertaccini
+# O.t.t.i. On The Table Inspection
+# project by Stefano Bertaccini
 
 Problema teorico:
 Recentemente si è alzato un polverone per quanto riguarda la presenza di alti residui di pesticidi all'interno di prodotti alimentari.
@@ -39,10 +40,9 @@ All'interno del contratto ci dovrà essere la proposta con già dei prodotti lis
 NFT1155->
 Dovrà rappresentare le caratteristiche di un prodotto e del certificato lasciato dal laboratorio di ricerca, nel tempo gli NFT potrebbero avere più release per permettere alle aziende di farsi ricertificare.
 
-    Definire gli attributi utili
 
 Notarize->
-Sistema basic di notarizzazione per salvare l'hash del certificato e poter essere inattaccabili dai deepFake e per presentare una effettiva copia del certificato
+Sistema basic di notarizzazione per salvare l'hash del certificato e poter essere inattaccabili dai deepFake e per presentare una effettiva copia del certificato, flusso c
 
 Vault->
 Tenere su un altro contratto il valore raccolto
