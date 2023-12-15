@@ -2,10 +2,10 @@
     A) Controllare il contratto di Ballot e di voting se ci sono delle librerie utili DONE
     B) Capire come controllare la transazione e di conseguenza accettare il voto passato DONE
     C) Capire come avviare la seconda funding DONE
-    D) Valutare i primi tempi di setting per la proposta Amount/Time 
+    D) Valutare i primi tempi di setting per la proposta Amount/Time TODO
     E.3) Capire se collegare il Vault per tenere il valore raccolto dal funding DONE
     F.5) Aggiungere test per l'invio dei token ai donatori DONE
-    G) Aggiungere possibilità di pareggio con spareggio per n. voti
+    G) Aggiungere possibilità di pareggio con spareggio per n. voti DONE
 
 2) NFT Product
     A) Dare una forma all'NFT e ai dati che bisogna caricare, soprattutto se poi finiscono su openSea 
