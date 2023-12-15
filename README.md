@@ -1,5 +1,5 @@
 # O.t.t.i. On The Table Inspection
-# project by Stefano Bertaccini
+## project by Stefano Bertaccini
 
 Problema teorico:
 Recentemente si è alzato un polverone per quanto riguarda la presenza di alti residui di pesticidi all'interno di prodotti alimentari.
